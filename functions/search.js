@@ -36,7 +36,7 @@ async function searchFiles(bucket, poNumber, snNumber) {
     };
 
     try {
-        // QC Check List 검색 - PO번호도 부분 일치로 검색
+        // QC Check List 검색 - 와일드카드 패턴 지원
         if (poNumber || snNumber) {
             const qcPrefix = `1. QC check list/`;
             const qcFiles = await listFiles(bucket, qcPrefix);
@@ -47,13 +47,13 @@ async function searchFiles(bucket, poNumber, snNumber) {
                 let matchesSN = true;
 
                 if (poNumber) {
-                    // PO번호 와일드카드 검색
-                    matchesPO = wildcardMatch(file.key, poNumber);
+                    // PO번호 와일드카드 검색 (폴더명에서만)
+                    matchesPO = wildcardMatch(file.key, poNumber, 'po');
                 }
 
                 if (snNumber) {
-                    // SN번호 와일드카드 검색
-                    matchesSN = wildcardMatch(file.key, snNumber);
+                    // SN번호 와일드카드 검색 (파일명에서)
+                    matchesSN = wildcardMatch(file.key, snNumber, 'sn');
                 }
 
                 return matchesPO && matchesSN;
@@ -63,7 +63,7 @@ async function searchFiles(bucket, poNumber, snNumber) {
             }));
         }
 
-        // Photo 폴더들 검색 - PO번호도 부분 일치로 검색
+        // Photo 폴더들 검색 - 와일드카드 패턴 지원
         const photoSections = [
             { key: 'eevPhotos', path: '2. Photo/1.EEV/' },
             { key: 'caseControllerPhotos', path: '2. Photo/2.Case controller/' },
@@ -80,13 +80,13 @@ async function searchFiles(bucket, poNumber, snNumber) {
                     let matchesSN = true;
 
                     if (poNumber) {
-                        // PO번호 와일드카드 검색
-                        matchesPO = wildcardMatch(file.key, poNumber);
+                        // PO번호 와일드카드 검색 (폴더명에서만)
+                        matchesPO = wildcardMatch(file.key, poNumber, 'po');
                     }
 
                     if (snNumber) {
-                        // SN번호 와일드카드 검색
-                        matchesSN = wildcardMatch(file.key, snNumber);
+                        // SN번호 와일드카드 검색 (파일명에서)
+                        matchesSN = wildcardMatch(file.key, snNumber, 'sn');
                     }
 
                     return matchesPO && matchesSN;
@@ -131,23 +131,48 @@ function isImageFile(filename) {
 
 /**
  * 엑셀 스타일 와일드카드 패턴 매칭 함수
- * @param {string} text - 검색 대상 텍스트
+ * @param {string} filePath - 전체 파일 경로
  * @param {string} pattern - 와일드카드 패턴
+ * @param {string} searchType - 'po' 또는 'sn' (검색 타입)
  * @returns {boolean} - 매칭 여부
  * 
  * 지원하는 패턴:
- * * : 0개 이상의 임의 문자 (예: *123* → "ka123qa" 매칭)
+ * *O : O로 끝나는 폴더명 매칭 (예: "PO"는 매칭, "PO2122244"는 불매칭)
  * ? : 정확히 1개의 임의 문자 (예: ?123 → "K123" 매칭, "KK123" 불매칭)
  * 대소문자 구분 안함
  */
-function wildcardMatch(text, pattern) {
+function wildcardMatch(filePath, pattern, searchType = 'po') {
     // 대소문자 구분 없이 비교
-    const lowerText = text.toLowerCase();
     const lowerPattern = pattern.toLowerCase();
+    
+    let targetText = '';
+    
+    if (searchType === 'po') {
+        // PO번호 검색: 폴더명에서만 검색
+        // 예: "1. QC check list/PO2122244/file.pdf" → "PO2122244"
+        const pathParts = filePath.split('/');
+        for (let part of pathParts) {
+            if (part.toLowerCase().startsWith('po')) {
+                targetText = part.toLowerCase();
+                break;
+            }
+        }
+        // PO 폴더를 찾지 못한 경우 빈 문자열로 설정 (매칭 실패)
+        if (!targetText) {
+            return false;
+        }
+    } else {
+        // SN번호 검색: 전체 파일 경로에서 검색
+        targetText = filePath.toLowerCase();
+    }
     
     // 와일드카드가 없으면 단순 포함 검색
     if (!lowerPattern.includes('*') && !lowerPattern.includes('?')) {
-        return lowerText.includes(lowerPattern);
+        if (searchType === 'po') {
+            return targetText.includes(lowerPattern);
+        } else {
+            return targetText.includes(lowerPattern);
+        }
     }
     
     // 정규식으로 변환
@@ -160,11 +185,18 @@ function wildcardMatch(text, pattern) {
         .replace(/\?/g, '.');  // ? → .
     
     try {
-        const regex = new RegExp(regexPattern, 'i'); // 대소문자 구분 없음
-        return regex.test(lowerText);
+        // PO 검색의 경우 폴더명 전체 매칭, SN 검색의 경우 부분 매칭
+        let regex;
+        if (searchType === 'po') {
+            regex = new RegExp(`^${regexPattern}$`, 'i'); // 전체 매칭 (폴더명 정확히 일치)
+            return regex.test(targetText);
+        } else {
+            regex = new RegExp(regexPattern, 'i'); // 부분 매칭 (파일 경로에서 포함)
+            return regex.test(targetText);
+        }
     } catch (error) {
         console.error('Regex error:', error);
         // 정규식 오류 시 기본 포함 검색으로 fallback
-        return lowerText.includes(lowerPattern.replace(/[*?]/g, ''));
+        return targetText.includes(lowerPattern.replace(/[*?]/g, ''));
     }
 }
