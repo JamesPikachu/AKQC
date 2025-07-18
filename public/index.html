@@ -194,6 +194,21 @@
             transform: scale(1.1);
         }
 
+        .file-item .status-indicator {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+            display: none;
+        }
+
+        .file-item.active .status-indicator {
+            display: inline-block;
+        }
+
         .preview-section {
             margin-top: 30px;
         }
@@ -267,6 +282,54 @@
             background-color: #f8f9fa;
             border-radius: 4px;
             color: #666;
+        }
+
+        /* PDF 미리보기 스타일 */
+        .pdf-preview {
+            width: 100%;
+        }
+
+        .pdf-header {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pdf-header p {
+            margin: 0 0 10px 0;
+            font-weight: bold;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .pdf-viewer {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+        }
+
+        .pdf-viewer iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .pdf-error {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #666;
+        }
+
+        .pdf-error p:first-child {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 10px;
         }
 
         .loading {
@@ -474,6 +537,20 @@
             font-weight: bold;
         }
 
+        /* 섹션 개수 표시 스타일 */
+        .section-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            min-width: 20px;
+            text-align: center;
+            display: inline-block;
+        }
+
         @media (max-width: 1200px) {
             .results-section {
                 grid-template-columns: repeat(2, 1fr);
@@ -576,7 +653,10 @@
         <div class="results-section">
             <div class="section-card">
                 <div class="section-header">
-                    <span>QC Check List</span>
+                    <div>
+                        <span>QC Check List</span>
+                        <span class="section-count" id="qc-count">0</span>
+                    </div>
                     <button class="btn btn-section-reset" onclick="resetSection('qc')">초기화</button>
                 </div>
                 <div class="file-list" id="qc-list">
@@ -586,7 +666,10 @@
 
             <div class="section-card">
                 <div class="section-header">
-                    <span>EEV Photos</span>
+                    <div>
+                        <span>EEV Photos</span>
+                        <span class="section-count" id="eev-count">0</span>
+                    </div>
                     <button class="btn btn-section-reset" onclick="resetSection('eev')">초기화</button>
                 </div>
                 <div class="file-list" id="eev-list">
@@ -596,7 +679,10 @@
 
             <div class="section-card">
                 <div class="section-header">
-                    <span>Case Controller Photos</span>
+                    <div>
+                        <span>Case Controller Photos</span>
+                        <span class="section-count" id="case-count">0</span>
+                    </div>
                     <button class="btn btn-section-reset" onclick="resetSection('case')">초기화</button>
                 </div>
                 <div class="file-list" id="case-list">
@@ -606,7 +692,10 @@
 
             <div class="section-card">
                 <div class="section-header">
-                    <span>Showcase Photos</span>
+                    <div>
+                        <span>Showcase Photos</span>
+                        <span class="section-count" id="showcase-count">0</span>
+                    </div>
                     <button class="btn btn-section-reset" onclick="resetSection('showcase')">초기화</button>
                 </div>
                 <div class="file-list" id="showcase-list">
@@ -692,6 +781,9 @@
         // 섹션별 결과 표시
         function displaySectionResults(sectionId, files, type) {
             const section = document.getElementById(sectionId);
+            
+            // 개수 업데이트
+            updateSectionCount(type, files ? files.length : 0);
 
             if (!files || files.length === 0) {
                 section.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
@@ -699,11 +791,35 @@
             }
 
             section.innerHTML = files.map(file =>
-                `<div class="file-item" onclick="loadFilePreview('${file.path}', '${type}', '${file.name}')">
+                `<div class="file-item" data-file-path="${file.path}" onclick="loadFilePreview('${file.path}', '${type}', '${file.name}')">
                     <span>${file.name}</span>
-                    <button class="delete-btn" onclick="event.stopPropagation(); removeFileFromList('${sectionId}', '${file.path}')" title="목록에서 제거">×</button>
+                    <div style="display: flex; align-items: center;">
+                        <span class="status-indicator">[ON]</span>
+                        <button class="delete-btn" onclick="event.stopPropagation(); removeFileFromList('${sectionId}', '${file.path}')" title="목록에서 제거">×</button>
+                    </div>
                 </div>`
             ).join('');
+        }
+
+        // 섹션 개수 업데이트
+        function updateSectionCount(type, count) {
+            const countElement = document.getElementById(`${type}-count`);
+            if (countElement) {
+                countElement.textContent = count;
+                
+                // 개수에 따라 색상 변경
+                if (count === 0) {
+                    countElement.style.background = '#6c757d';
+                } else if (count <= 5) {
+                    countElement.style.background = '#28a745';
+                } else if (count <= 10) {
+                    countElement.style.background = '#ffc107';
+                    countElement.style.color = '#212529';
+                } else {
+                    countElement.style.background = '#dc3545';
+                    countElement.style.color = 'white';
+                }
+            }
         }
 
         // 파일 미리보기 로드
@@ -711,10 +827,17 @@
             const previewContainer = document.getElementById('preview-container');
             const previewId = `preview-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+            // 해당 파일 항목에 [ON] 표시 추가
+            const fileItem = document.querySelector(`[data-file-path="${filePath}"]`);
+            if (fileItem) {
+                fileItem.classList.add('active');
+            }
+
             // 새 미리보기 카드 생성
             const previewCard = document.createElement('div');
             previewCard.className = 'preview-card';
             previewCard.id = previewId;
+            previewCard.setAttribute('data-file-path', filePath); // 파일 경로 저장
 
             const typeNames = {
                 'qc': 'QC Check List',
@@ -726,7 +849,7 @@
             previewCard.innerHTML = `
                 <div class="preview-header">
                     <span>${typeNames[type]} - ${fileName}</span>
-                    <button class="preview-close" onclick="removePreview('${previewId}')" title="미리보기 닫기">×</button>
+                    <button class="preview-close" onclick="removePreview('${previewId}', '${filePath}')" title="미리보기 닫기">×</button>
                 </div>
                 <div class="preview-content" id="${previewId}-content">
                     <div class="loading">로딩 중...</div>
@@ -742,12 +865,21 @@
                 const contentDiv = document.getElementById(`${previewId}-content`);
 
                 if (type === 'qc') {
-                    // PDF 파일 처리
+                    // PDF 파일 처리 - 미리보기와 다운로드 모두 제공
                     contentDiv.innerHTML =
-                        `<div class="pdf-info">
-                            <p>📄 PDF 파일</p>
-                            <p style="word-break: break-all; margin: 10px 0;">${fileName}</p>
-                            <button onclick="downloadPDF('${filePath}')" class="btn btn-search">PDF 다운로드</button>
+                        `<div class="pdf-preview">
+                            <div class="pdf-header">
+                                <p>📄 ${fileName}</p>
+                                <button onclick="downloadPDF('${filePath}')" class="btn btn-search" style="margin-bottom: 10px;">PDF 다운로드</button>
+                            </div>
+                            <div class="pdf-viewer">
+                                <iframe src="/file?path=${encodeURIComponent(filePath)}" 
+                                        width="100%" 
+                                        height="500px" 
+                                        style="border: 1px solid #ddd; border-radius: 8px;"
+                                        onerror="handlePDFError('${previewId}-content', '${filePath}', '${fileName}')">
+                                </iframe>
+                            </div>
                         </div>`;
                 } else {
                     // 이미지 파일 처리
@@ -767,6 +899,24 @@
         function handleImageError(contentId) {
             document.getElementById(contentId).innerHTML =
                 '<div class="no-results">이미지를 불러올 수 없습니다</div>';
+        }
+
+        // PDF 로드 에러 처리
+        function handlePDFError(contentId, filePath, fileName) {
+            document.getElementById(contentId).innerHTML =
+                `<div class="pdf-error">
+                    <p>📄 PDF 미리보기를 불러올 수 없습니다</p>
+                    <p style="font-size: 0.9rem; color: #666; margin: 10px 0;">${fileName}</p>
+                    <div style="margin-top: 15px;">
+                        <button onclick="downloadPDF('${filePath}')" class="btn btn-search">PDF 다운로드</button>
+                        <button onclick="openPDFInNewTab('${filePath}')" class="btn btn-tree" style="margin-left: 10px;">새 탭에서 열기</button>
+                    </div>
+                </div>`;
+        }
+
+        // PDF를 새 탭에서 열기
+        function openPDFInNewTab(filePath) {
+            window.open(`/file?path=${encodeURIComponent(filePath)}`, '_blank');
         }
 
         // PDF 다운로드 함수
@@ -809,6 +959,11 @@
                 document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
             });
 
+            // 모든 섹션 개수 초기화
+            ['qc', 'eev', 'case', 'showcase'].forEach(type => {
+                updateSectionCount(type, 0);
+            });
+
             // 미리보기 초기화
             clearAllPreviews();
         }
@@ -817,6 +972,9 @@
         function resetSection(sectionType) {
             const sectionId = `${sectionType}-list`;
             document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+            
+            // 개수 초기화
+            updateSectionCount(sectionType, 0);
 
             // 해당 섹션의 미리보기만 제거
             const previewContainer = document.getElementById('preview-container');
@@ -837,9 +995,17 @@
         }
 
         // 미리보기 제거
-        function removePreview(previewId) {
+        function removePreview(previewId, filePath) {
             const preview = document.getElementById(previewId);
             if (preview) {
+                // 해당 파일 항목에서 [ON] 표시 제거
+                if (filePath) {
+                    const fileItem = document.querySelector(`[data-file-path="${filePath}"]`);
+                    if (fileItem) {
+                        fileItem.classList.remove('active');
+                    }
+                }
+                
                 preview.style.transform = 'scale(0.8)';
                 preview.style.opacity = '0';
                 setTimeout(() => preview.remove(), 300);
@@ -849,6 +1015,13 @@
         // 전체 미리보기 초기화
         function clearAllPreviews() {
             const previewContainer = document.getElementById('preview-container');
+            
+            // 모든 파일 항목에서 [ON] 표시 제거
+            const activeItems = document.querySelectorAll('.file-item.active');
+            activeItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
             previewContainer.innerHTML = '';
         }
 
@@ -863,11 +1036,262 @@
                     item.style.opacity = '0';
                     setTimeout(() => {
                         item.remove();
+                        
+                        // 남은 파일 개수 계산 및 업데이트
+                        const remainingItems = section.querySelectorAll('.file-item').length;
+                        const sectionType = getSectionTypeFromId(sectionId);
+                        updateSectionCount(sectionType, remainingItems);
+                        
+                        // 목록이 비어있으면 "검색 결과가 없습니다" 표시
+                        if (remainingItems === 0) {
+                            section.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                        }
+                    }, 300);
+                }
+            });
+        }
+
+        // 섹션 ID에서 타입 추출
+        function getSectionTypeFromId(sectionId) {
+            const typeMap = {
+                'qc-list': 'qc',
+                'eev-list': 'eev',
+                'case-list': 'case',
+                'showcase-list': 'showcase'
+            };
+            return typeMap[sectionId] || 'qc';
+        }
+
+        // 실시간 검색 기능
+        let searchTimeout;
+
+        function setupRealTimeSearch() {
+            const poInput = document.getElementById('poSearch');
+            const snInput = document.getElementById('snSearch');
+
+            function handleInput() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const poValue = poInput.value.trim();
+                    const snValue = snInput.value.trim();
+
+                    if (poValue || snValue) {
+                        performSearch();
+                    } else {
+                        // 입력이 비어있으면 결과 초기화
+                        const sections = ['qc-list', 'eev-list', 'case-list', 'showcase-list'];
+                        sections.forEach(sectionId => {
+                            document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                        });
+                    }
+                }, 300); // 300ms 딜레이
+            }
+
+            poInput.addEventListener('input', handleInput);
+            snInput.addEventListener('input', handleInput);
+
+            // 엔터키 검색도 유지
+            poInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    performSearch();
+                }
+            });
+
+            snInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    performSearch();
+                }
+            });
+        }
+
+        // 트리구조 모달 표시
+        async function showTreeStructure() {
+            const modal = document.getElementById('treeModal');
+            const content = document.getElementById('treeContent');
+            
+            modal.style.display = 'block';
+            content.innerHTML = '<div class="tree-loading">트리구조를 불러오는 중...</div>';
+            
+            try {
+                const response = await fetch('/tree-structure', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayTreeStructure(data);
+                } else {
+                    content.innerHTML = '<div class="no-results">트리구조를 불러올 수 없습니다</div>';
+                }
+            } catch (error) {
+                console.error('트리구조 로드 오류:', error);
+                content.innerHTML = '<div class="no-results">트리구조 로드 중 오류가 발생했습니다</div>';
+            }
+        }
+
+        // 트리구조 표시
+        function displayTreeStructure(data) {
+            const content = document.getElementById('treeContent');
+            
+            let html = `
+                <div class="tree-stats">
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.totalFiles}</div>
+                        <div class="tree-stat-label">총 파일 수</div>
+                    </div>
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.totalFolders}</div>
+                        <div class="tree-stat-label">총 폴더 수</div>
+                    </div>
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.pdfFiles}</div>
+                        <div class="tree-stat-label">PDF 파일</div>
+                    </div>
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.imageFiles}</div>
+                        <div class="tree-stat-label">이미지 파일</div>
+                    </div>
+                </div>
+                <div style="border-top: 2px solid #eee; padding-top: 20px;">
+                    ${buildTreeHTML(data.tree, 0)}
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+
+        // 트리 HTML 생성
+        function buildTreeHTML(items, depth) {
+            let html = '';
+            const indent = '  '.repeat(depth);
+            
+            items.forEach(item => {
+                if (item.type === 'folder') {
+                    html += `<div class="tree-item tree-folder" style="margin-left: ${depth * 20}px;">
+                        ${indent}📁 ${item.name}/ (${item.children ? item.children.length : 0}개 항목)
+                    </div>`;
+                    
+                    if (item.children && item.children.length > 0) {
+                        html += buildTreeHTML(item.children, depth + 1);
+                    }
+                } else {
+                    const fileIcon = getFileIcon(item.name);
+                    const fileClass = getFileClass(item.name);
+                    html += `<div class="tree-item tree-file ${fileClass}" style="margin-left: ${depth * 20}px;" 
+                             onclick="previewFileFromTree('${item.path}', '${item.name}')" 
+                             title="클릭하여 미리보기">
+                        ${indent}${fileIcon} ${item.name}
+                    </div>`;
+                }
+            });
+            
+            return html;
+        }
+
+        // 파일 아이콘 반환
+        function getFileIcon(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            switch (ext) {
+                case 'pdf': return '📄';
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'gif':
+                case 'bmp':
+                case 'webp': return '🖼️';
+                default: return '📄';
+            }
+        }
+
+        // 파일 클래스 반환
+        function getFileClass(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            if (ext === 'pdf') return 'pdf';
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
+            return '';
+        }
+
+        // 트리에서 파일 미리보기
+        function previewFileFromTree(filePath, fileName) {
+            const ext = fileName.toLowerCase().split('.').pop();
+            let type = 'qc'; // 기본값
+            
+            if (filePath.includes('1. QC check list')) type = 'qc';
+            else if (filePath.includes('1.EEV')) type = 'eev';
+            else if (filePath.includes('2.Case controller')) type = 'case';
+            else if (filePath.includes('3.Showcase photo')) type = 'showcase';
+            
+            loadFilePreview(filePath, type, fileName);
+            closeTreeModal();
+        }
+
+        // 트리구조 모달 닫기
+        function closeTreeModal() {
+            document.getElementById('treeModal').style.display = 'none';
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('treeModal');
+            if (event.target === modal) {
+                closeTreeModal();
+            }
+        }
+
+        // 와일드카드 도움말 표시/숨기기
+        function showWildcardHelp() {
+            document.getElementById('wildcardHelp').style.display = 'block';
+            document.getElementById('wildcardHelp').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideWildcardHelp() {
+            document.getElementById('wildcardHelp').style.display = 'none';
+        }
+
+        // 페이지 로드 시 실시간 검색 설정
+        document.addEventListener('DOMContentLoaded', setupRealTimeSearch);
+    </script>
+</body>
+
+</html>     
+       previewContainer.innerHTML = '';
+        }
+
+        // 목록에서 파일 제거
+        function removeFileFromList(sectionId, filePath) {
+            const section = document.getElementById(sectionId);
+            const fileItems = section.querySelectorAll('.file-item');
+
+            fileItems.forEach(item => {
+                if (item.getAttribute('data-file-path') === filePath) {
+                    item.style.transform = 'translateX(-100%)';
+                    item.style.opacity = '0';
+                    setTimeout(() => {
+                        item.remove();
                         // 목록이 비어있으면 "검색 결과가 없습니다" 표시
                         if (section.children.length === 0) {
                             section.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
                         }
+                        
+                        // 개수 업데이트
+                        const remainingItems = section.querySelectorAll('.file-item').length;
+                        const sectionType = sectionId.replace('-list', '');
+                        updateSectionCount(sectionType, remainingItems);
                     }, 300);
+                }
+            });
+
+            // 해당 파일의 미리보기도 제거
+            const previewContainer = document.getElementById('preview-container');
+            const previewCards = previewContainer.querySelectorAll('.preview-card');
+            previewCards.forEach(card => {
+                if (card.getAttribute('data-file-path') === filePath) {
+                    card.remove();
                 }
             });
         }
@@ -892,6 +1316,11 @@
                         const sections = ['qc-list', 'eev-list', 'case-list', 'showcase-list'];
                         sections.forEach(sectionId => {
                             document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                        });
+                        
+                        // 모든 섹션 개수 초기화
+                        ['qc', 'eev', 'case', 'showcase'].forEach(type => {
+                            updateSectionCount(type, 0);
                         });
                     }
                 }, 300); // 300ms 딜레이
