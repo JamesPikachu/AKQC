@@ -1,0 +1,74 @@
+// performSearch 함수 내 fetch 경로 수정
+const response = await fetch('/search', {  // '/api/search'에서 '/search'로 변경
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        poNumber,
+        snNumber
+    })
+});
+
+// loadFilePreview 함수 수정
+async function loadFilePreview(filePath, type) {
+    const previewId = `${type}-preview`;
+    const contentId = `${type}-content`;
+    
+    // 미리보기 카드 표시
+    document.getElementById(previewId).classList.add('active');
+    
+    // 로딩 상태
+    document.getElementById(contentId).innerHTML = '<div class="loading">로딩 중...</div>';
+
+    try {
+        if (type === 'qc') {
+            // PDF 파일 처리
+            const response = await fetch(`/file?path=${encodeURIComponent(filePath)}`);
+            
+            if (response.ok) {
+                const fileInfo = await response.json();
+                document.getElementById(contentId).innerHTML = 
+                    `<div class="pdf-info">
+                        <p>PDF 파일</p>
+                        <p>${fileInfo.name}</p>
+                        <button onclick="downloadPDF('${filePath}')" class="btn btn-search">PDF 다운로드</button>
+                    </div>`;
+            }
+        } else {
+            // 이미지 파일 처리
+            document.getElementById(contentId).innerHTML = 
+                `<img src="/file?path=${encodeURIComponent(filePath)}" alt="미리보기" />`;
+        }
+    } catch (error) {
+        console.error('파일 로드 오류:', error);
+        document.getElementById(contentId).innerHTML = 
+            '<div class="no-results">파일을 불러올 수 없습니다</div>';
+    }
+}
+
+// PDF 다운로드 함수 추가
+async function downloadPDF(filePath) {
+    try {
+        const response = await fetch('/file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ path: filePath })
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filePath.split('/').pop();
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    } catch (error) {
+        console.error('다운로드 오류:', error);
+        alert('PDF 다운로드 중 오류가 발생했습니다.');
+    }
+}

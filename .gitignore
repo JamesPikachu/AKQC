@@ -1,0 +1,30 @@
+# Dependencies
+# 프로젝트가 의존하는 패키지 폴더
+/node_modules
+
+# Cloudflare Wrangler files
+# Wrangler가 생성하는 임시/캐시 폴더
+.wrangler
+.vscode
+
+# Build output
+# 빌드 결과물이 저장되는 폴더 (예: dist, build)
+/dist
+/build
+
+# Log files
+# 각종 로그 파일
+npm-debug.log*
+yarn-debug.log*
+*.log
+
+# Environment variables
+# API 키 등 민감한 정보를 담는 환경변수 파일
+.env
+.env.local
+
+
+#개인적인 자료
+allcodes.js
+output.md
+schema.sql

@@ -1,0 +1,15 @@
+name = "AKQC"
+compatibility_date = "2025-07-17"
+
+# Pages 프로젝트 설정
+pages_build_output_dir = "public"
+
+# D1 데이터베이스 바인딩
+[[d1_databases]]
+binding = "DB"
+database_name = "AKQC-db"
+database_id = "your-database-id"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "AKQC-files"
