@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,17 +14,21 @@
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 98vw;
+            width: 100%;
             margin: 0 auto;
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-height: 95vh;
         }
 
         .header {
@@ -53,23 +58,31 @@
         }
 
         .search-group input {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-group input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
 
         .btn-search {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
@@ -79,8 +92,17 @@
             margin-left: 10px;
         }
 
+        .btn-section-reset {
+            background-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
         .btn:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .results-section {
@@ -91,17 +113,28 @@
         }
 
         .section-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
             overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .section-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
         }
 
         .section-header {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 15px;
             font-weight: bold;
             color: #333;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .file-list {
@@ -110,43 +143,105 @@
         }
 
         .file-item {
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-bottom: 1px solid #eee;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .file-item:hover {
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+            transform: translateX(5px);
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
         }
 
         .file-item:last-child {
             border-bottom: none;
         }
 
+        .file-item .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .file-item:hover .delete-btn {
+            display: flex;
+        }
+
+        .file-item .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
         .preview-section {
             margin-top: 30px;
+        }
+
+        .preview-items {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            margin-top: 20px;
         }
 
         .preview-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
             overflow: hidden;
-            display: none;
+            transition: all 0.3s ease;
+            background: white;
+            position: relative;
         }
 
-        .preview-card.active {
-            display: block;
+        .preview-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
         }
 
         .preview-header {
-            background-color: #e9ecef;
-            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px 15px;
             font-weight: bold;
-            color: #333;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .preview-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .preview-content {
@@ -158,7 +253,7 @@
             max-width: 100%;
             height: auto;
             border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .preview-content .pdf-info {
@@ -181,6 +276,12 @@
             font-style: italic;
         }
 
+        @media (max-width: 1200px) {
+            .results-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
             .search-section {
                 grid-template-columns: 1fr;
@@ -196,16 +297,38 @@
                 grid-template-columns: 1fr;
             }
 
-            .preview-section {
+            .preview-items {
                 grid-template-columns: 1fr;
             }
 
             .container {
                 padding: 15px;
+                max-width: 95vw;
+            }
+
+            body {
+                padding: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .file-item {
+                padding: 10px;
+                font-size: 14px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -230,28 +353,40 @@
 
         <div class="results-section">
             <div class="section-card">
-                <div class="section-header">QC Check List</div>
+                <div class="section-header">
+                    <span>QC Check List</span>
+                    <button class="btn btn-section-reset" onclick="resetSection('qc')">초기화</button>
+                </div>
                 <div class="file-list" id="qc-list">
                     <div class="no-results">검색 결과가 없습니다</div>
                 </div>
             </div>
 
             <div class="section-card">
-                <div class="section-header">EEV Photos</div>
+                <div class="section-header">
+                    <span>EEV Photos</span>
+                    <button class="btn btn-section-reset" onclick="resetSection('eev')">초기화</button>
+                </div>
                 <div class="file-list" id="eev-list">
                     <div class="no-results">검색 결과가 없습니다</div>
                 </div>
             </div>
 
             <div class="section-card">
-                <div class="section-header">Case Controller Photos</div>
+                <div class="section-header">
+                    <span>Case Controller Photos</span>
+                    <button class="btn btn-section-reset" onclick="resetSection('case')">초기화</button>
+                </div>
                 <div class="file-list" id="case-list">
                     <div class="no-results">검색 결과가 없습니다</div>
                 </div>
             </div>
 
             <div class="section-card">
-                <div class="section-header">Showcase Photos</div>
+                <div class="section-header">
+                    <span>Showcase Photos</span>
+                    <button class="btn btn-section-reset" onclick="resetSection('showcase')">초기화</button>
+                </div>
                 <div class="file-list" id="showcase-list">
                     <div class="no-results">검색 결과가 없습니다</div>
                 </div>
@@ -259,24 +394,12 @@
         </div>
 
         <div class="preview-section">
-            <div class="preview-card" id="qc-preview">
-                <div class="preview-header">QC Check List 미리보기</div>
-                <div class="preview-content" id="qc-content"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #333;">미리보기</h3>
+                <button class="btn btn-reset" onclick="clearAllPreviews()">전체 미리보기 초기화</button>
             </div>
-
-            <div class="preview-card" id="eev-preview">
-                <div class="preview-header">EEV Photo 미리보기</div>
-                <div class="preview-content" id="eev-content"></div>
-            </div>
-
-            <div class="preview-card" id="case-preview">
-                <div class="preview-header">Case Controller Photo 미리보기</div>
-                <div class="preview-content" id="case-content"></div>
-            </div>
-
-            <div class="preview-card" id="showcase-preview">
-                <div class="preview-header">Showcase Photo 미리보기</div>
-                <div class="preview-content" id="showcase-content"></div>
+            <div class="preview-items" id="preview-container">
+                <!-- 동적으로 생성되는 미리보기 카드들 -->
             </div>
         </div>
     </div>
@@ -334,52 +457,80 @@
         // 섹션별 결과 표시
         function displaySectionResults(sectionId, files, type) {
             const section = document.getElementById(sectionId);
-            
+
             if (!files || files.length === 0) {
                 section.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
                 return;
             }
 
-            section.innerHTML = files.map(file => 
-                `<div class="file-item" onclick="loadFilePreview('${file.path}', '${type}')">${file.name}</div>`
+            section.innerHTML = files.map(file =>
+                `<div class="file-item" onclick="loadFilePreview('${file.path}', '${type}', '${file.name}')">
+                    <span>${file.name}</span>
+                    <button class="delete-btn" onclick="event.stopPropagation(); removeFileFromList('${sectionId}', '${file.path}')" title="목록에서 제거">×</button>
+                </div>`
             ).join('');
         }
 
         // 파일 미리보기 로드
-        async function loadFilePreview(filePath, type) {
-            const previewId = `${type}-preview`;
-            const contentId = `${type}-content`;
-            
-            // 미리보기 카드 표시
-            document.getElementById(previewId).classList.add('active');
-            
-            // 로딩 상태
-            document.getElementById(contentId).innerHTML = '<div class="loading">로딩 중...</div>';
+        async function loadFilePreview(filePath, type, fileName) {
+            const previewContainer = document.getElementById('preview-container');
+            const previewId = `preview-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+            // 새 미리보기 카드 생성
+            const previewCard = document.createElement('div');
+            previewCard.className = 'preview-card';
+            previewCard.id = previewId;
+
+            const typeNames = {
+                'qc': 'QC Check List',
+                'eev': 'EEV Photos',
+                'case': 'Case Controller',
+                'showcase': 'Showcase Photos'
+            };
+
+            previewCard.innerHTML = `
+                <div class="preview-header">
+                    <span>${typeNames[type]} - ${fileName}</span>
+                    <button class="preview-close" onclick="removePreview('${previewId}')" title="미리보기 닫기">×</button>
+                </div>
+                <div class="preview-content" id="${previewId}-content">
+                    <div class="loading">로딩 중...</div>
+                </div>
+            `;
+
+            previewContainer.appendChild(previewCard);
+
+            // 스크롤을 새로 추가된 미리보기로 이동
+            previewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             try {
+                const contentDiv = document.getElementById(`${previewId}-content`);
+
                 if (type === 'qc') {
                     // PDF 파일 처리
-                    document.getElementById(contentId).innerHTML = 
+                    contentDiv.innerHTML =
                         `<div class="pdf-info">
-                            <p>PDF 파일</p>
-                            <p>${filePath.split('/').pop()}</p>
+                            <p>📄 PDF 파일</p>
+                            <p style="word-break: break-all; margin: 10px 0;">${fileName}</p>
                             <button onclick="downloadPDF('${filePath}')" class="btn btn-search">PDF 다운로드</button>
                         </div>`;
                 } else {
                     // 이미지 파일 처리
-                    document.getElementById(contentId).innerHTML = 
-                        `<img src="/file?path=${encodeURIComponent(filePath)}" alt="미리보기" onerror="handleImageError('${contentId}')" />`;
+                    contentDiv.innerHTML =
+                        `<img src="/file?path=${encodeURIComponent(filePath)}" alt="미리보기" 
+                              onerror="handleImageError('${previewId}-content')" 
+                              style="max-width: 100%; height: auto; border-radius: 8px;" />`;
                 }
             } catch (error) {
                 console.error('파일 로드 오류:', error);
-                document.getElementById(contentId).innerHTML = 
+                document.getElementById(`${previewId}-content`).innerHTML =
                     '<div class="no-results">파일을 불러올 수 없습니다</div>';
             }
         }
 
         // 이미지 로드 에러 처리
         function handleImageError(contentId) {
-            document.getElementById(contentId).innerHTML = 
+            document.getElementById(contentId).innerHTML =
                 '<div class="no-results">이미지를 불러올 수 없습니다</div>';
         }
 
@@ -424,20 +575,115 @@
             });
 
             // 미리보기 초기화
-            const previews = ['qc-preview', 'eev-preview', 'case-preview', 'showcase-preview'];
-            previews.forEach(previewId => {
-                document.getElementById(previewId).classList.remove('active');
+            clearAllPreviews();
+        }
+
+        // 섹션별 초기화
+        function resetSection(sectionType) {
+            const sectionId = `${sectionType}-list`;
+            document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+
+            // 해당 섹션의 미리보기만 제거
+            const previewContainer = document.getElementById('preview-container');
+            const typeNames = {
+                'qc': 'QC Check List',
+                'eev': 'EEV Photos',
+                'case': 'Case Controller',
+                'showcase': 'Showcase Photos'
+            };
+
+            const previews = previewContainer.querySelectorAll('.preview-card');
+            previews.forEach(preview => {
+                const header = preview.querySelector('.preview-header span');
+                if (header && header.textContent.includes(typeNames[sectionType])) {
+                    preview.remove();
+                }
             });
         }
 
-        // 엔터키 검색
-        document.getElementById('poSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') performSearch();
-        });
+        // 미리보기 제거
+        function removePreview(previewId) {
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                preview.style.transform = 'scale(0.8)';
+                preview.style.opacity = '0';
+                setTimeout(() => preview.remove(), 300);
+            }
+        }
 
-        document.getElementById('snSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') performSearch();
-        });
+        // 전체 미리보기 초기화
+        function clearAllPreviews() {
+            const previewContainer = document.getElementById('preview-container');
+            previewContainer.innerHTML = '';
+        }
+
+        // 목록에서 파일 제거
+        function removeFileFromList(sectionId, filePath) {
+            const section = document.getElementById(sectionId);
+            const fileItems = section.querySelectorAll('.file-item');
+
+            fileItems.forEach(item => {
+                if (item.onclick && item.onclick.toString().includes(filePath)) {
+                    item.style.transform = 'translateX(-100%)';
+                    item.style.opacity = '0';
+                    setTimeout(() => {
+                        item.remove();
+                        // 목록이 비어있으면 "검색 결과가 없습니다" 표시
+                        if (section.children.length === 0) {
+                            section.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                        }
+                    }, 300);
+                }
+            });
+        }
+
+        // 실시간 검색 기능
+        let searchTimeout;
+
+        function setupRealTimeSearch() {
+            const poInput = document.getElementById('poSearch');
+            const snInput = document.getElementById('snSearch');
+
+            function handleInput() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const poValue = poInput.value.trim();
+                    const snValue = snInput.value.trim();
+
+                    if (poValue || snValue) {
+                        performSearch();
+                    } else {
+                        // 입력이 비어있으면 결과 초기화
+                        const sections = ['qc-list', 'eev-list', 'case-list', 'showcase-list'];
+                        sections.forEach(sectionId => {
+                            document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                        });
+                    }
+                }, 300); // 300ms 딜레이
+            }
+
+            poInput.addEventListener('input', handleInput);
+            snInput.addEventListener('input', handleInput);
+
+            // 엔터키 검색도 유지
+            poInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    performSearch();
+                }
+            });
+
+            snInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    performSearch();
+                }
+            });
+        }
+
+        // 페이지 로드 시 실시간 검색 설정
+        document.addEventListener('DOMContentLoaded', setupRealTimeSearch);
     </script>
 </body>
+
 </html>
