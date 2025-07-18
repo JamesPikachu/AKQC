@@ -92,6 +92,12 @@
             margin-left: 10px;
         }
 
+        .btn-tree {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            margin-left: 10px;
+        }
+
         .btn-section-reset {
             background-color: #dc3545;
             color: white;
@@ -276,6 +282,198 @@
             font-style: italic;
         }
 
+        /* 트리구조 모달 스타일 */
+        .tree-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .tree-modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tree-modal-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tree-modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .tree-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .tree-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .tree-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .tree-item {
+            padding: 4px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            padding-left: 8px;
+        }
+
+        .tree-item:hover {
+            background-color: #f8f9fa;
+            color: #667eea;
+        }
+
+        .tree-folder {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .tree-file {
+            color: #6c757d;
+        }
+
+        .tree-file.pdf {
+            color: #dc3545;
+        }
+
+        .tree-file.image {
+            color: #007bff;
+        }
+
+        .tree-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .tree-stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .tree-stat-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tree-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .tree-stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 와일드카드 도움말 스타일 */
+        .btn-help {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            margin-left: 10px;
+        }
+
+        .wildcard-help {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            border: 2px solid #17a2b8;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.15);
+        }
+
+        .help-content h4 {
+            color: #17a2b8;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .help-examples {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .help-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #17a2b8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .help-item strong {
+            color: #17a2b8;
+            font-size: 1.1rem;
+        }
+
+        .help-example {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .help-example code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+            font-weight: bold;
+        }
+
         @media (max-width: 1200px) {
             .results-section {
                 grid-template-columns: repeat(2, 1fr);
@@ -339,15 +537,39 @@
         <div class="search-section">
             <div class="search-group">
                 <label for="poSearch">PO번호 검색</label>
-                <input type="text" id="poSearch" placeholder="예: PO2122244">
+                <input type="text" id="poSearch" placeholder="예: PO2122244 또는 *123* (와일드카드)">
             </div>
             <div class="search-group">
                 <label for="snSearch">SN번호 검색</label>
-                <input type="text" id="snSearch" placeholder="예: SN12345">
+                <input type="text" id="snSearch" placeholder="예: SN12345 또는 ?123 (와일드카드)">
             </div>
             <div>
                 <button class="btn btn-search" onclick="performSearch()">검색</button>
                 <button class="btn btn-reset" onclick="resetAll()">초기화</button>
+                <button class="btn btn-tree" onclick="showTreeStructure()">트리구조</button>
+                <button class="btn btn-help" onclick="showWildcardHelp()">검색도움말</button>
+            </div>
+        </div>
+
+        <!-- 와일드카드 도움말 -->
+        <div class="wildcard-help" id="wildcardHelp" style="display: none;">
+            <div class="help-content">
+                <h4>🔍 와일드카드 검색 사용법</h4>
+                <div class="help-examples">
+                    <div class="help-item">
+                        <strong>* (별표)</strong>: 0개 이상의 임의 문자
+                        <div class="help-example">예: <code>*123*</code> → "ka123qa", "PO123SN" 등 매칭</div>
+                    </div>
+                    <div class="help-item">
+                        <strong>? (물음표)</strong>: 정확히 1개의 임의 문자
+                        <div class="help-example">예: <code>?123</code> → "K123" 매칭, "KK123" 불매칭</div>
+                    </div>
+                    <div class="help-item">
+                        <strong>조합 사용</strong>: 여러 와일드카드 조합 가능
+                        <div class="help-example">예: <code>*N*m*</code> → "naMe", "Number" 등 매칭 (대소문자 구분 안함)</div>
+                    </div>
+                </div>
+                <button class="btn btn-reset" onclick="hideWildcardHelp()">닫기</button>
             </div>
         </div>
 
@@ -400,6 +622,19 @@
             </div>
             <div class="preview-items" id="preview-container">
                 <!-- 동적으로 생성되는 미리보기 카드들 -->
+            </div>
+        </div>
+
+        <!-- 트리구조 모달 -->
+        <div id="treeModal" class="tree-modal">
+            <div class="tree-modal-content">
+                <div class="tree-modal-header">
+                    <h2>📁 R2 서버 트리구조</h2>
+                    <button class="tree-close" onclick="closeTreeModal()">×</button>
+                </div>
+                <div class="tree-content" id="treeContent">
+                    <div class="tree-loading">트리구조를 불러오는 중...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -679,6 +914,153 @@
                     performSearch();
                 }
             });
+        }
+
+        // 트리구조 모달 표시
+        async function showTreeStructure() {
+            const modal = document.getElementById('treeModal');
+            const content = document.getElementById('treeContent');
+            
+            modal.style.display = 'block';
+            content.innerHTML = '<div class="tree-loading">트리구조를 불러오는 중...</div>';
+            
+            try {
+                const response = await fetch('/tree-structure', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayTreeStructure(data);
+                } else {
+                    content.innerHTML = '<div class="no-results">트리구조를 불러올 수 없습니다</div>';
+                }
+            } catch (error) {
+                console.error('트리구조 로드 오류:', error);
+                content.innerHTML = '<div class="no-results">트리구조 로드 중 오류가 발생했습니다</div>';
+            }
+        }
+
+        // 트리구조 표시
+        function displayTreeStructure(data) {
+            const content = document.getElementById('treeContent');
+            
+            let html = `
+                <div class="tree-stats">
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.totalFiles}</div>
+                        <div class="tree-stat-label">총 파일 수</div>
+                    </div>
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.totalFolders}</div>
+                        <div class="tree-stat-label">총 폴더 수</div>
+                    </div>
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.pdfFiles}</div>
+                        <div class="tree-stat-label">PDF 파일</div>
+                    </div>
+                    <div class="tree-stat-item">
+                        <div class="tree-stat-number">${data.stats.imageFiles}</div>
+                        <div class="tree-stat-label">이미지 파일</div>
+                    </div>
+                </div>
+                <div style="border-top: 2px solid #eee; padding-top: 20px;">
+                    ${buildTreeHTML(data.tree, 0)}
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+
+        // 트리 HTML 생성
+        function buildTreeHTML(items, depth) {
+            let html = '';
+            const indent = '  '.repeat(depth);
+            
+            items.forEach(item => {
+                if (item.type === 'folder') {
+                    html += `<div class="tree-item tree-folder" style="margin-left: ${depth * 20}px;">
+                        ${indent}📁 ${item.name}/ (${item.children ? item.children.length : 0}개 항목)
+                    </div>`;
+                    
+                    if (item.children && item.children.length > 0) {
+                        html += buildTreeHTML(item.children, depth + 1);
+                    }
+                } else {
+                    const fileIcon = getFileIcon(item.name);
+                    const fileClass = getFileClass(item.name);
+                    html += `<div class="tree-item tree-file ${fileClass}" style="margin-left: ${depth * 20}px;" 
+                             onclick="previewFileFromTree('${item.path}', '${item.name}')" 
+                             title="클릭하여 미리보기">
+                        ${indent}${fileIcon} ${item.name}
+                    </div>`;
+                }
+            });
+            
+            return html;
+        }
+
+        // 파일 아이콘 반환
+        function getFileIcon(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            switch (ext) {
+                case 'pdf': return '📄';
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'gif':
+                case 'bmp':
+                case 'webp': return '🖼️';
+                default: return '📄';
+            }
+        }
+
+        // 파일 클래스 반환
+        function getFileClass(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            if (ext === 'pdf') return 'pdf';
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
+            return '';
+        }
+
+        // 트리에서 파일 미리보기
+        function previewFileFromTree(filePath, fileName) {
+            const ext = fileName.toLowerCase().split('.').pop();
+            let type = 'qc'; // 기본값
+            
+            if (filePath.includes('1. QC check list')) type = 'qc';
+            else if (filePath.includes('1.EEV')) type = 'eev';
+            else if (filePath.includes('2.Case controller')) type = 'case';
+            else if (filePath.includes('3.Showcase photo')) type = 'showcase';
+            
+            loadFilePreview(filePath, type, fileName);
+            closeTreeModal();
+        }
+
+        // 트리구조 모달 닫기
+        function closeTreeModal() {
+            document.getElementById('treeModal').style.display = 'none';
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('treeModal');
+            if (event.target === modal) {
+                closeTreeModal();
+            }
+        }
+
+        // 와일드카드 도움말 표시/숨기기
+        function showWildcardHelp() {
+            document.getElementById('wildcardHelp').style.display = 'block';
+            document.getElementById('wildcardHelp').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideWildcardHelp() {
+            document.getElementById('wildcardHelp').style.display = 'none';
         }
 
         // 페이지 로드 시 실시간 검색 설정
