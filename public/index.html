@@ -1,74 +1,443 @@
-// performSearch 함수 내 fetch 경로 수정
-const response = await fetch('/search', {  // '/api/search'에서 '/search'로 변경
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        poNumber,
-        snNumber
-    })
-});
-
-// loadFilePreview 함수 수정
-async function loadFilePreview(filePath, type) {
-    const previewId = `${type}-preview`;
-    const contentId = `${type}-content`;
-    
-    // 미리보기 카드 표시
-    document.getElementById(previewId).classList.add('active');
-    
-    // 로딩 상태
-    document.getElementById(contentId).innerHTML = '<div class="loading">로딩 중...</div>';
-
-    try {
-        if (type === 'qc') {
-            // PDF 파일 처리
-            const response = await fetch(`/file?path=${encodeURIComponent(filePath)}`);
-            
-            if (response.ok) {
-                const fileInfo = await response.json();
-                document.getElementById(contentId).innerHTML = 
-                    `<div class="pdf-info">
-                        <p>PDF 파일</p>
-                        <p>${fileInfo.name}</p>
-                        <button onclick="downloadPDF('${filePath}')" class="btn btn-search">PDF 다운로드</button>
-                    </div>`;
-            }
-        } else {
-            // 이미지 파일 처리
-            document.getElementById(contentId).innerHTML = 
-                `<img src="/file?path=${encodeURIComponent(filePath)}" alt="미리보기" />`;
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARKOREA - QC 검색 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    } catch (error) {
-        console.error('파일 로드 오류:', error);
-        document.getElementById(contentId).innerHTML = 
-            '<div class="no-results">파일을 불러올 수 없습니다</div>';
-    }
-}
 
-// PDF 다운로드 함수 추가
-async function downloadPDF(filePath) {
-    try {
-        const response = await fetch('/file', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ path: filePath })
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .search-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: end;
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .search-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-search {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .results-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .file-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .preview-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .preview-card.active {
+            display: block;
+        }
+
+        .preview-header {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .preview-content {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .preview-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .preview-content .pdf-info {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .search-section {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .btn-reset {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .results-section {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-section {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ARKOREA QC 검색 시스템</h1>
+            <p>PO번호 또는 SN번호로 검색하여 관련 자료를 확인하세요</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-group">
+                <label for="poSearch">PO번호 검색</label>
+                <input type="text" id="poSearch" placeholder="예: PO2122244">
+            </div>
+            <div class="search-group">
+                <label for="snSearch">SN번호 검색</label>
+                <input type="text" id="snSearch" placeholder="예: SN12345">
+            </div>
+            <div>
+                <button class="btn btn-search" onclick="performSearch()">검색</button>
+                <button class="btn btn-reset" onclick="resetAll()">초기화</button>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="section-card">
+                <div class="section-header">QC Check List</div>
+                <div class="file-list" id="qc-list">
+                    <div class="no-results">검색 결과가 없습니다</div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">EEV Photos</div>
+                <div class="file-list" id="eev-list">
+                    <div class="no-results">검색 결과가 없습니다</div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">Case Controller Photos</div>
+                <div class="file-list" id="case-list">
+                    <div class="no-results">검색 결과가 없습니다</div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">Showcase Photos</div>
+                <div class="file-list" id="showcase-list">
+                    <div class="no-results">검색 결과가 없습니다</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-card" id="qc-preview">
+                <div class="preview-header">QC Check List 미리보기</div>
+                <div class="preview-content" id="qc-content"></div>
+            </div>
+
+            <div class="preview-card" id="eev-preview">
+                <div class="preview-header">EEV Photo 미리보기</div>
+                <div class="preview-content" id="eev-content"></div>
+            </div>
+
+            <div class="preview-card" id="case-preview">
+                <div class="preview-header">Case Controller Photo 미리보기</div>
+                <div class="preview-content" id="case-content"></div>
+            </div>
+
+            <div class="preview-card" id="showcase-preview">
+                <div class="preview-header">Showcase Photo 미리보기</div>
+                <div class="preview-content" id="showcase-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 검색 함수
+        async function performSearch() {
+            const poNumber = document.getElementById('poSearch').value.trim();
+            const snNumber = document.getElementById('snSearch').value.trim();
+
+            if (!poNumber && !snNumber) {
+                alert('PO번호 또는 SN번호를 입력해주세요.');
+                return;
+            }
+
+            // 로딩 상태 표시
+            showLoading();
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        poNumber,
+                        snNumber
+                    })
+                });
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('검색 오류:', error);
+                alert('검색 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 로딩 상태 표시
+        function showLoading() {
+            const sections = ['qc-list', 'eev-list', 'case-list', 'showcase-list'];
+            sections.forEach(sectionId => {
+                document.getElementById(sectionId).innerHTML = '<div class="loading">검색 중...</div>';
+            });
+        }
+
+        // 검색 결과 표시
+        function displayResults(data) {
+            displaySectionResults('qc-list', data.qcCheckList, 'qc');
+            displaySectionResults('eev-list', data.eevPhotos, 'eev');
+            displaySectionResults('case-list', data.caseControllerPhotos, 'case');
+            displaySectionResults('showcase-list', data.showcasePhotos, 'showcase');
+        }
+
+        // 섹션별 결과 표시
+        function displaySectionResults(sectionId, files, type) {
+            const section = document.getElementById(sectionId);
+            
+            if (!files || files.length === 0) {
+                section.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                return;
+            }
+
+            section.innerHTML = files.map(file => 
+                `<div class="file-item" onclick="loadFilePreview('${file.path}', '${type}')">${file.name}</div>`
+            ).join('');
+        }
+
+        // 파일 미리보기 로드
+        async function loadFilePreview(filePath, type) {
+            const previewId = `${type}-preview`;
+            const contentId = `${type}-content`;
+            
+            // 미리보기 카드 표시
+            document.getElementById(previewId).classList.add('active');
+            
+            // 로딩 상태
+            document.getElementById(contentId).innerHTML = '<div class="loading">로딩 중...</div>';
+
+            try {
+                if (type === 'qc') {
+                    // PDF 파일 처리
+                    document.getElementById(contentId).innerHTML = 
+                        `<div class="pdf-info">
+                            <p>PDF 파일</p>
+                            <p>${filePath.split('/').pop()}</p>
+                            <button onclick="downloadPDF('${filePath}')" class="btn btn-search">PDF 다운로드</button>
+                        </div>`;
+                } else {
+                    // 이미지 파일 처리
+                    document.getElementById(contentId).innerHTML = 
+                        `<img src="/file?path=${encodeURIComponent(filePath)}" alt="미리보기" onerror="handleImageError('${contentId}')" />`;
+                }
+            } catch (error) {
+                console.error('파일 로드 오류:', error);
+                document.getElementById(contentId).innerHTML = 
+                    '<div class="no-results">파일을 불러올 수 없습니다</div>';
+            }
+        }
+
+        // 이미지 로드 에러 처리
+        function handleImageError(contentId) {
+            document.getElementById(contentId).innerHTML = 
+                '<div class="no-results">이미지를 불러올 수 없습니다</div>';
+        }
+
+        // PDF 다운로드 함수
+        async function downloadPDF(filePath) {
+            try {
+                const response = await fetch('/file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ path: filePath })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filePath.split('/').pop();
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert('PDF 다운로드 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('다운로드 오류:', error);
+                alert('PDF 다운로드 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 전체 초기화
+        function resetAll() {
+            // 검색창 초기화
+            document.getElementById('poSearch').value = '';
+            document.getElementById('snSearch').value = '';
+
+            // 결과 목록 초기화
+            const sections = ['qc-list', 'eev-list', 'case-list', 'showcase-list'];
+            sections.forEach(sectionId => {
+                document.getElementById(sectionId).innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+            });
+
+            // 미리보기 초기화
+            const previews = ['qc-preview', 'eev-preview', 'case-preview', 'showcase-preview'];
+            previews.forEach(previewId => {
+                document.getElementById(previewId).classList.remove('active');
+            });
+        }
+
+        // 엔터키 검색
+        document.getElementById('poSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') performSearch();
         });
 
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filePath.split('/').pop();
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-    } catch (error) {
-        console.error('다운로드 오류:', error);
-        alert('PDF 다운로드 중 오류가 발생했습니다.');
-    }
-}
+        document.getElementById('snSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>

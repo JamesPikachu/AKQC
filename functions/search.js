@@ -3,6 +3,9 @@ export async function onRequestPost(context) {
         const { request, env } = context;
         const { poNumber, snNumber } = await request.json();
 
+        console.log('Search request:', { poNumber, snNumber });
+        console.log('R2_BUCKET available:', !!env.R2_BUCKET);
+
         // R2에서 파일 목록 조회
         const results = await searchFiles(env.R2_BUCKET, poNumber, snNumber);
 
@@ -14,7 +17,7 @@ export async function onRequestPost(context) {
         });
     } catch (error) {
         console.error('Search error:', error);
-        return new Response(JSON.stringify({ error: 'Search failed' }), {
+        return new Response(JSON.stringify({ error: 'Search failed', details: error.message }), {
             status: 500,
             headers: { 
                 'Content-Type': 'application/json',
@@ -99,14 +102,18 @@ async function listFiles(bucket, prefix) {
     const files = [];
     let cursor;
 
-    do {
-        const options = { prefix };
-        if (cursor) options.cursor = cursor;
+    try {
+        do {
+            const options = { prefix };
+            if (cursor) options.cursor = cursor;
 
-        const listed = await bucket.list(options);
-        files.push(...listed.objects);
-        cursor = listed.cursor;
-    } while (cursor);
+            const listed = await bucket.list(options);
+            files.push(...listed.objects);
+            cursor = listed.cursor;
+        } while (cursor);
+    } catch (error) {
+        console.error('List files error:', error);
+    }
 
     return files;
 }

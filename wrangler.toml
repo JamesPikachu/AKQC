@@ -10,7 +10,7 @@ binding = "DB"
 database_name = "akqc-db"
 database_id = "fda5f281-1ab4-4cef-9609-895fbb0c2899"
 
+# R2 버킷 바인딩
 [[r2_buckets]]
 binding = "R2_BUCKET"
 bucket_name = "akqc-files"
-
