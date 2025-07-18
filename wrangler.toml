@@ -13,3 +13,4 @@ database_id = "fda5f281-1ab4-4cef-9609-895fbb0c2899"
 [[r2_buckets]]
 binding = "R2_BUCKET"
 bucket_name = "akqc-files"
+
